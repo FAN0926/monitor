@@ -89,6 +89,10 @@ def start(src_folder, endwith):
                     f.write("file '{}'".format(file))
                     f.write('\n')
             concat_video('fileline.txt', txt_path.replace('.txt', '_fin'+endwith))
+            for list in out_file_list:
+                if os.path.exists(list):
+                    os.remove(list)
+
 
         else:
             print("txt_path:", txt_path, '不存在，请检查。')
@@ -96,7 +100,8 @@ def start(src_folder, endwith):
 
 
 if __name__ == '__main__':
-    start(r'F:\OneDrive - bupt.edu.cn\PycharmProjects\python_foundation\Opencv', '.mp4')
+    start(r'D:\surface\no_deal', '.mp4')
+    start(r'D:\surface\screenshot', '.mp4')
 
     # import subprocess
     #
