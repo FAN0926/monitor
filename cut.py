@@ -8,6 +8,7 @@ desc:
 """
 
 import time
+import datetime
 from tqdm import tqdm
 import subprocess
 import os
@@ -76,6 +77,12 @@ def start(src_folder, endwith):
             # print(get_time_list)                                    # 允许空白时间5s
             for a in range(int(len(get_time_list) / 2)):   # 根据时间段对视频进行剪切
                 start_time = get_time_list.pop(0)
+                #增加切割片段前的冗余
+                if start_time != '0:00:00' and start_time != '0:00:01' and start_time != '0:00:02':
+                    start_time = datetime.datetime.strptime(start_time, '%H:%M:%S')
+                    start_time = start_time - datetime.timedelta(seconds=2)
+                    start_time = start_time.strftime('%H:%M:%S')
+                # print('修改后的时间为：', start_time)
                 new_start_time = "Sat Mar 28 {} 2019".format(start_time)
                 end_time = "Sat Mar 28 {} 2019".format(get_time_list.pop(0))
                 strftime1 = time.mktime(time.strptime(new_start_time, "%a %b %d %H:%M:%S %Y"))  # 格式化为时间戳
@@ -93,16 +100,15 @@ def start(src_folder, endwith):
                 if os.path.exists(list):
                     os.remove(list)
 
-
         else:
             print("txt_path:", txt_path, '不存在，请检查。')
             continue
 
 
 if __name__ == '__main__':
-    start(r'D:\surface\no_deal', '.mp4')
-    start(r'D:\surface\screenshot', '.mp4')
-
+    #start(r'D:\surface\no_deal', '.mp4')
+    #start(r'D:\surface\screenshot', '.mp4')
+    start(os.getcwd(), '.mp4')
     # import subprocess
     #
     # sp = subprocess.Popen('ping 127.0.0.1 -n 100', stdout=subprocess.PIPE)
