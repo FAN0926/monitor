@@ -23,6 +23,8 @@ def cut_video(start_time, during_time, input, output):
     :param input:
     :param output:
     :return:
+    值得注意的是，ffmpeg 为了加速，会使用关键帧技术， 所以有时剪切出来的结果在起止时间上未必准确。
+    通常来说，把 -ss 选项放在 -i 之前，会使用关键帧技术； 把 -ss 选项放在 -i 之后，则不使用关键帧技术。
     '''
     cmd = [
         'ffmpeg',
@@ -33,8 +35,9 @@ def cut_video(start_time, during_time, input, output):
         '-accurate_seek',
         '-i',
         input,
-        '-codec',
+        '-c',
         'copy',
+        '-copyts',
         output]
     subprocess.call(cmd)
 
@@ -60,11 +63,12 @@ def concat_video(filelistpath, output):
     subprocess.call(cmd)
 
 
-def start(src_folder, endwith):
+def start(src_folder, endwith, blankspacetime):
     '''
     对文件夹内的所有视频文件进行分析，并根据分析结果进行剪辑合并
     :param src_folder:
     :param endwith:
+    :param blankspacetime: 允许的空白时间
     :return:
     '''
     src_paths = [os.path.join(src_folder, path) for path in os.listdir(src_folder) if path.endswith(endwith)]
@@ -73,14 +77,14 @@ def start(src_folder, endwith):
         txt_path = i.replace(endwith, '.txt')  # 读取该文件对应的时间文件
         out_file_list = []                    # 切割后的视频文件路径
         if os.path.exists(txt_path):
-            get_time_list = time_analysis.analysis(txt_path, 5)       # 对时间文件进行分析，找到出现移动目标的时间段，
-            # print(get_time_list)                                    # 允许空白时间5s
+            get_time_list = time_analysis.analysis(txt_path, blankspacetime)       # 对时间文件进行分析，找到出现移动目标的时间段，
+            # print(get_time_list)
             for a in range(int(len(get_time_list) / 2)):   # 根据时间段对视频进行剪切
                 start_time = get_time_list.pop(0)
                 #增加切割片段前的冗余
                 if start_time != '0:00:00' and start_time != '0:00:01' and start_time != '0:00:02':
                     start_time = datetime.datetime.strptime(start_time, '%H:%M:%S')
-                    start_time = start_time - datetime.timedelta(seconds=2)
+                    start_time = start_time - datetime.timedelta(seconds=1)    # 增加1s的冗余
                     start_time = start_time.strftime('%H:%M:%S')
                 # print('修改后的时间为：', start_time)
                 new_start_time = "Sat Mar 28 {} 2019".format(start_time)
@@ -106,45 +110,6 @@ def start(src_folder, endwith):
 
 
 if __name__ == '__main__':
-    #start(r'D:\surface\no_deal', '.mp4')
-    #start(r'D:\surface\screenshot', '.mp4')
-    start(os.getcwd(), '.mp4')
-    # import subprocess
-    #
-    # sp = subprocess.Popen('ping 127.0.0.1 -n 100', stdout=subprocess.PIPE)
-    # while True:
-    #     line = sp.stdout.readline()
-    #     if not line: break
-    #     print(line)
-    # if sp.wait() == 0:
-    #     print('sub process execute ok')
-
-    # import subprocess
-    #
-    #
-    # class NetDetect:
-    #
-    #     def __init__(self, addr):
-    #         self.addr = addr
-    #         self.log = open('NetDetect.log', 'w')
-    #         if self.log == None:
-    #             print('Open NetDetect.log failed')
-    #
-    #     def __del__(self):
-    #         if self.fdp:
-    #             self.fdp.kill()
-    #         if self.log:
-    #             self.log.close()
-    #
-    #     def ping(self):
-    #         self.fdp = subprocess.Popen(['ping', self.addr, '-t'], stdout=subprocess.PIPE)
-    #         for line in self.fdp.stdout:
-    #             print(line.decode("gb2312"))
-    #             self.log.write(line.decode("gb2312"))
-    #             self.log.flush()
-    #         self.fdp = None
-    #
-    #
-    # if __name__ == '__main__':
-    #     nd = NetDetect('www.sina.com.cn')
-    #     nd.ping()
+    start(r'D:\surface\no_deal', '.mp4', 5)
+    # start(r'D:\surface\screenshot', '.mp4', 3)
+    # start(os.getcwd(), '.mp4', 3)
