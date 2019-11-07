@@ -27,8 +27,9 @@ def split_time(time_sq):   # 切割最后输出的时间列表使其成对出现
     return start_time,end_time
 
 
-def analysis(vedio_txt_path, max_empty_time, Rrawpic=False):
-    papa = pd.read_csv(vedio_txt_path, sep='\t',
+def analysis(video_txt_path, max_empty_time, Rrawpic=False):
+    # 文件时间预处理，去除掉单独出现的0和1
+    papa = pd.read_csv(video_txt_path, sep='\t',
                        delimiter='\s+')  # 加载papa.txt,指定它的分隔符是 \t
     # papa.head()  # 显示数据的前几行
     # rowNum = papa.shape[0]  # 不包括表头
@@ -44,7 +45,7 @@ def analysis(vedio_txt_path, max_empty_time, Rrawpic=False):
         if k == 1:
             result.extend(mulsq(k, times))
         if k == 0:
-            if times <= max_empty_time:  # 设定容许的连零个数
+            if times <= max_empty_time:  # 设定容许的连零个数，即允许连续空白的秒数
                 result.extend(mulsq(1, times))
             else:
                 result.extend(mulsq(0, times))
@@ -104,4 +105,4 @@ def analysis(vedio_txt_path, max_empty_time, Rrawpic=False):
     return get_time
 
 if __name__ == '__main__':
-    analysis(r'F:\OneDrive - bupt.edu.cn\PycharmProjects\python_foundation\Opencv\result\test.txt', 2, False)
+    print(analysis(r'F:\YSHS\test\test.txt', 5, False))
