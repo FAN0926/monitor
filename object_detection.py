@@ -55,11 +55,11 @@ class object_detect():
         # print('camera total:', camera.get(7))
         while ret:
             # 为了提高速度而不进行逐帧检测，而是选择了每一秒测一帧
-            if camera.get(1) % int(2) != 0:
-                # print(camera.get(1))
-                pbar.update(1)
-                ret, frame = camera.read()  # 读取视频帧数据
-                continue
+            # if camera.get(1) % int(2) != 0:
+            #     # print(camera.get(1))
+            #     pbar.update(1)
+            #     ret, frame = camera.read()  # 读取视频帧数据
+            #     continue
             # print(str(camera.get(1) / camera.get(7)*100) + '%')
             fgmask = mog.apply(frame)
             th = cv2.threshold(np.copy(fgmask), 244, 255, cv2.THRESH_BINARY)[1]
@@ -73,9 +73,15 @@ class object_detect():
             if last_time != time_now:
                 writetimeflag = True
                 if len(persecondtype) != 0:
-                    # print(persecondtype)
+                    print(persecondtype)
+                    # 通过计算一秒内有几个帧检测到物体的比例来判断这一秒是否是真实检测到物体而非噪声
+                    # 现在暂时设置为若一秒内检测到物体的帧数/一秒内总帧数 < 20% # （暂时不实现）同时出现1的位置不在该帧的开头或者结尾则表明是噪声
                     if 1 in persecondtype:
-                        self.write_time(self.video, str(last_time), 1)
+                        # if persecondtype.count(1)/len(persecondtype) > 0.1 or (1 in persecondtype[:4] or 1 in persecondtype[-4:]):
+                        if persecondtype.count(1) / len(persecondtype) > 0.2:
+                            self.write_time(self.video, str(last_time), 1)
+                        else:
+                            self.write_time(self.video, str(last_time), 0)
                     else:
                         self.write_time(self.video, str(last_time), 0)
                 persecondtype.clear()
@@ -90,6 +96,7 @@ class object_detect():
             if writetimeflag is True:
                 persecondtype.append(0)
                 #self.write_time(self.video, str(time_now), 0)
+            writetimeflag = True
 
             last_time = time_now
             pbar.update(1)
@@ -137,10 +144,10 @@ def get_file_list(src_folder, endwith):
 
 if __name__ == '__main__':
     # video = r"F:\YSHS\115\VID_20190920_222525.mp4_20190923_181347.mkv"
-    # video = r'F:\YSHS\A ISVID_20191012_191644_1.mp4'
+    # video = r'F:\YSHS\test\盥+室_pre.mp4'
     # starttime = datetime.datetime.now()
     # print(starttime)
-    # video = r'test.mp4'
+    # # video = r'test.mp4'
     # object_detect(video)
     # print(datetime.datetime.now(), '\nduring time:',datetime.datetime.now()-starttime)
     src_folder = r'F:\YSHS\test'
@@ -148,7 +155,3 @@ if __name__ == '__main__':
     for x in get_file_list(src_folder, endwith):
         object_detect(x)
         #print(x)
-    # src_folder = r'D:\surface\screenshot'
-    # for x in tqdm(get_file_list(src_folder,endwith)):
-    #     object_detect(x)
-    #     #print(x)
