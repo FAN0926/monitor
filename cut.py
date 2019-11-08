@@ -103,24 +103,34 @@ def start(src_folder=None, endwith='.mp4', blankspacetime=5, src_file=None):
             out_file_list = []                    # 切割后的视频文件路径
             if os.path.exists(txt_path):
                 get_time_list = time_analysis.analysis(txt_path, blankspacetime)       # 对时间文件进行分析，找到出现移动目标的时间段，
+                get_time_list.pop(0)  # 测试代码，用于剪切无物体的片段
+                if len(get_time_list) % 2 != 0:       # 测试代码，用于剪切无物体的片段
+                    print('type(get_time_list):',type(get_time_list),get_time_list)
+                    get_time_list.pop(-1)               # 测试代码，用于剪切无物体的片段
+                if len(get_time_list) == 0:             # 测试代码，用于剪切无物体的片段
+                    continue                            # 测试代码，用于剪切无物体的片段
                 # print(get_time_list)
                 with tqdm(range(int(len(get_time_list) / 2)), unit='part') as t2:
                     t2.set_description('Current video is %s , %d/%d' % (i, current_num, total_num))
                     for a in t2:   # 根据时间段对视频进行剪切
                         start_time = get_time_list.pop(0)
+                        '''
                         # 增加切割片段前的冗余
                         if start_time != '0:00:00' and start_time != '0:00:01' and start_time != '0:00:02':
                             start_time = datetime.datetime.strptime(start_time, '%H:%M:%S')
                             start_time = start_time - datetime.timedelta(seconds=1)    # 增加1s的冗余
                             start_time = start_time.strftime('%H:%M:%S')
                         # print('修改后的时间为：', start_time)
+                        '''
                         new_start_time = "Sat Mar 28 {} 2019".format(start_time)
                         # 如果不是视频结尾，则增加在片段后增加1秒钟
                         end_time = get_time_list.pop(0)
+                        '''
                         if len(get_time_list) != 0:
                             end_time = datetime.datetime.strptime(end_time, '%H:%M:%S')
                             end_time = end_time + datetime.timedelta(seconds=1)  # 增加1s的冗余
                             end_time = end_time.strftime('%H:%M:%S')
+                        '''
                         new_end_time = "Sat Mar 28 {} 2019".format(end_time)
                         strftime1 = time.mktime(time.strptime(new_start_time, "%a %b %d %H:%M:%S %Y"))  # 格式化为时间戳
                         strftime2 = time.mktime(time.strptime(new_end_time, "%a %b %d %H:%M:%S %Y"))
@@ -140,6 +150,7 @@ def start(src_folder=None, endwith='.mp4', blankspacetime=5, src_file=None):
             else:
                 print("txt_path:", txt_path, '不存在，请检查。')
                 continue
+        current_num += 1
     except KeyboardInterrupt:
         t2.close()
         raise
@@ -147,6 +158,6 @@ def start(src_folder=None, endwith='.mp4', blankspacetime=5, src_file=None):
 
 
 if __name__ == '__main__':
-    start(r'F:\YSHS\test')
+    start(r'F:\YSHS\test\src_pre')
     # start(r'D:\surface\screenshot', '.mp4', 3)
     # start(os.getcwd(), '.mp4', 3)
